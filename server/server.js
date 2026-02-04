@@ -14,25 +14,23 @@ const __dirname = path.dirname(__filename);
 const app=express();
 const PORT=process.env.PORT || 3000;
 
-// Database Connection
-await connectDB();
+// Database Connection - using .then() to avoid top-level await issues in some environments
+connectDB().then(() => {
+    console.log("Connected to MongoDB");
+}).catch(err => {
+    console.error("MongoDB Connection Error:", err);
+});
 
 app.use(express.json());
 app.use(cors());
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/users',userRouter);
 app.use('/api/resumes',resumeRouter);
 app.use('/api/ai',aiRouter);
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
-    });
-} else {
-    app.get('/',(req,res)=>res.send("Server is live..."));
-}
+app.get('/',(req,res)=>res.send("Server is live..."));
 
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);
