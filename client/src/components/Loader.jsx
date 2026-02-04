@@ -1,10 +1,12 @@
 import React from 'react'
 
-const Loader = () => {
+const Loader = ({ size = 48, color = 'border-gray-400', fullScreen = true }) => {
   return (
-    <div className='flex items-center justify-center h-screen'>
-        <div className='size-12 border-3 border-gray-400 border-t-transparent rounded-full animate-spin'>
-
+    <div className={`flex items-center justify-center ${fullScreen ? 'h-screen' : ''}`}>
+        <div 
+          style={{ width: size, height: size }}
+          className={`border-3 ${color} border-t-transparent rounded-full animate-spin`}
+        >
         </div>
     </div>
   )

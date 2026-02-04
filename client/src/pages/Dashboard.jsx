@@ -50,7 +50,11 @@ const Dashboard = () => {
         event.preventDefault();
         setIsLoading(true);
         try {
-            const resumeText=await pdfToText(resume);
+            const extractText = typeof pdfToText === 'function' ? pdfToText : (pdfToText && pdfToText.default);
+            if (typeof extractText !== 'function') {
+                throw new Error("PDF extraction library not loaded correctly. Please refresh the page.");
+            }
+            const resumeText = await extractText(resume);
             const {data}=await api.post('/api/ai/upload-resume',{title, resumeText},{headers:{Authorization:token}});
             setTitle('');
             setResume(null);
@@ -163,7 +167,6 @@ const Dashboard = () => {
                             <button disabled={isLoading} className='w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'>
                                 {isLoading && <LoaderCircleIcon className='animate-spin size-4 text-white'/>}
                                 {isLoading ? 'Uploading...' : 'Upload Resume'}
-                                Upload Resume
                             </button>
                             <XIcon className='absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors' onClick={()=>{
                                 setShowUploadResume(false);setTitle('')

@@ -1,4 +1,3 @@
-import { response } from "express";
 import Resume from "../models/Resume.js";
 import ai from "../configs/ai.js";
 
@@ -75,54 +74,54 @@ export const uploadResume=async(req,res)=>{
             return res.status(400).json({message:'Missing required fields'});
         }
 
-        const systemPrompt="You are an expert AI Agent to extract data from resume.";
+        const systemPrompt="You are an expert AI Agent that extracts structured information from resume text.";
 
-        const userPrompt=`extract data from this resume: ${resumeText}
+        const userPrompt=`Extract the following information from this resume text: ${resumeText}
         
-        Provide data in the following JSON format with no additional text before or after:
+        Provide the data in valid JSON format with the following structure. Use empty strings or empty arrays if information is missing:
 
         {
-        professional_summary:{type:String,default:''},
-        skills:[{type:String}],
-    personal_info:{
-        image:{type:String, default:''},
-        full_name:{type:String, default:''},
-        profession:{type:String, default:''},
-        email:{type:String, default:''},
-        phone:{type:String, default:''},
-        location:{type:String, default:''},
-        linkedIn:{type:String, default:''},
-        website:{type:String, default:''},
-    },
-    experience:[
-        {
-            company:{type:String},
-            position:{type:String},
-            start_date:{type:String},
-            end_date:{type:String},
-            description:{type:String},
-            is_current:{type:Boolean},
+            "professional_summary": "string",
+            "skills": ["string"],
+            "personal_info": {
+                "full_name": "string",
+                "profession": "string",
+                "email": "string",
+                "phone": "string",
+                "location": "string",
+                "linkedIn": "string",
+                "website": "string"
+            },
+            "experience": [
+                {
+                    "company": "string",
+                    "position": "string",
+                    "start_date": "string",
+                    "end_date": "string",
+                    "description": "string",
+                    "is_current": boolean
+                }
+            ],
+            "projects": [
+                {
+                    "name": "string",
+                    "type": "string",
+                    "description": "string"
+                }
+            ],
+            "education": [
+                {
+                    "institution": "string",
+                    "degree": "string",
+                    "field": "string",
+                    "graduation_date": "string",
+                    "gpa": "string"
+                }
+            ]
         }
-    ],
-    projects:[
-        {
-            name:{type:String},
-            type:{type:String},
-            description:{type:String},
-        }
-    ],
-    education:[
-        {
-            institution:{type:String},
-            degree:{type:String},
-            field:{type:String},
-            graduation_date:{type:String},
-            gpa:{type:String},
-        }
-    ],
-    }
-    `;
+        `;
 
+        console.log("Starting AI Extraction with model:", process.env.OPENAI_MODEL);
         const response=await ai.chat.completions.create({
             model:process.env.OPENAI_MODEL,
             messages: [
@@ -134,16 +133,98 @@ export const uploadResume=async(req,res)=>{
                 role: "user",
                 content: userPrompt,
             },
-    ],
-    response_format:{type: 'json_object'}
-    })
+        ],
+        })
 
-        const extractedData=response.choices[0].message.content;
-        const parsedData=JSON.parse(extractedData);
-        const newResume=await Resume.create({userId,title,...parsedData});
+        let extractedData=response.choices[0].message.content;
+        console.log("AI Extraction Raw Response:", extractedData);
 
-        return res.json({resumeId: newResume._id});
+        try {
+            // Remove potential markdown code blocks if present
+            if (extractedData.includes('```json')) {
+                extractedData = extractedData.split('```json')[1].split('```')[0];
+            } else if (extractedData.includes('```')) {
+                extractedData = extractedData.split('```')[1].split('```')[0];
+            }
+            
+            const parsedData = JSON.parse(extractedData.trim());
+            const newResume = await Resume.create({ userId, title, ...parsedData });
+            return res.json({ resumeId: newResume._id });
+        } catch (parseError) {
+            console.error("AI Extraction Parsing Error:", extractedData);
+            return res.status(500).json({ 
+                message: "AI returned an invalid data format during extraction. Please try again.",
+                error: parseError.message 
+            });
+        }
     } catch (error) {
+        console.error("Upload Resume AI Error:", error.message, error.stack);
+        return res.status(400).json({message:error.message});
+    }
+}
+
+//controller for analyzing a resume for ATS score and feedback
+//POST: /api/ai/analyze-resume
+export const analyzeResume=async(req,res)=>{
+    try {
+        const {resumeText}=req.body;
+
+        if(!resumeText){
+            return res.status(400).json({message:'Missing required fields'});
+        }
+
+        const systemPrompt="You are an expert ATS (Applicant Tracking System) specialist and resume auditor.";
+
+        const userPrompt=`Analyze the following resume text for ATS compatibility and overall quality. 
+        Provide an ATS score (0-100), a list of strengths, a list of weaknesses, and actionable suggestions for improvement.
+
+        Resume Text: ${resumeText}
+        
+        Provide the analysis in the following JSON format with no additional text:
+        {
+            "ats_score": number,
+            "strengths": [string],
+            "weaknesses": [string],
+            "suggestions": [string],
+            "summary": string
+        }
+        `;
+
+        console.log("Starting AI Analysis with model:", process.env.OPENAI_MODEL);
+        const response=await ai.chat.completions.create({
+            model:process.env.OPENAI_MODEL,
+            messages: [
+            {   
+                role: "system",
+                content: systemPrompt,
+            },
+            {
+                role: "user",
+                content: userPrompt,
+            },
+        ],
+        })
+
+        let analysisData=response.choices[0].message.content;
+        console.log("AI Raw Response:", analysisData);
+        
+        try {
+            // Remove potential markdown code blocks if present
+            if (analysisData.includes('```json')) {
+                analysisData = analysisData.split('```json')[1].split('```')[0];
+            } else if (analysisData.includes('```')) {
+                analysisData = analysisData.split('```')[1].split('```')[0];
+            }
+            return res.json(JSON.parse(analysisData.trim()));
+        } catch (parseError) {
+            console.error("AI Response Parsing Error:", analysisData);
+            return res.status(500).json({ 
+                message: "AI returned an invalid response format. Please try again.",
+                error: parseError.message 
+            });
+        }
+    } catch (error) {
+        console.error("Analyze Resume Error:", error.message, error.stack);
         return res.status(400).json({message:error.message});
     }
 }

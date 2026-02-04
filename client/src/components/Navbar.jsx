@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { logout } from '../app/features/authSlice';
+import { logout } from '../app/features/authSlice.js';
 
 const Navbar = () => {
     const {user}=useSelector(state=>state.auth);
@@ -19,6 +19,9 @@ const Navbar = () => {
             <img src="/logo.svg" alt="logo" className='h-11 w-auto'/>
             </Link>
             <div className='flex items-center gap-4 text-sm'>
+                <Link to="/app/analyzer" className="hover:text-blue-600 font-medium max-sm:hidden">Resume Analyzer</Link>
+                <Link to="/app" className="hover:text-blue-600 font-medium max-sm:hidden">Dashboard</Link>
+                <p className='max-sm:hidden text-gray-400'>|</p>
                 <p className='max-sm:hidden'>Hi, {user?.name}</p>
                 <button onClick={logoutUser} className='bg-white hover:bg-slate-50 border border-gray-300 px-7 py-1.5 rounded-full active:scale-95 transition-all'>Logout</button>
             </div>

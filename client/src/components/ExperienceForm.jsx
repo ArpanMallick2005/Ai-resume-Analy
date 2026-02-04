@@ -1,7 +1,7 @@
 import { Briefcase, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react';
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux';
-import api from '../configs/api';
+import api from '../configs/api.js';
 
 const ExperienceForm = ({data,onChange}) => {
 

@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { dummyResumeData } from '../assets/assets';
 import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, Download, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
-import PersonalInfoForm from '../components/PersonalInfoForm';
-import ResumePreview from '../components/ResumePreview';
-import TemplateSelector from '../components/TemplateSelector';
-import ColorPicker from '../components/ColorPicker';
-import ProfessionalSummaryForm from '../components/ProfessionalSummaryForm';
-import ExperienceForm from '../components/ExperienceForm';
-import EducationForm from '../components/EducationForm';
-import ProjectForm from '../components/ProjectForm';
-import SkillsForm from '../components/SkillsForm';
+import PersonalInfoForm from '../components/PersonalInfoForm.jsx';
+import ResumePreview from '../components/ResumePreview.jsx';
+import TemplateSelector from '../components/TemplateSelector.jsx';
+import ColorPicker from '../components/ColorPicker.jsx';
+import ProfessionalSummaryForm from '../components/ProfessionalSummaryForm.jsx';
+import ExperienceForm from '../components/ExperienceForm.jsx';
+import EducationForm from '../components/EducationForm.jsx';
+import ProjectForm from '../components/ProjectForm.jsx';
+import SkillsForm from '../components/SkillsForm.jsx';
 import { useSelector } from 'react-redux';
-import api from '../configs/api';
+import api from '../configs/api.js';
 import toast from 'react-hot-toast';
 
 const ResumeBuilder = () => {
@@ -38,7 +38,10 @@ const ResumeBuilder = () => {
       if(data.resume){
         setResumeData({
           ...data.resume,
-          projects: data.resume.projects || []
+          projects: data.resume.projects || [],
+          skills: data.resume.skills || [],
+          experience: data.resume.experience || [],
+          education: data.resume.education || []
         });
         document.title=data.resume.title;
       }

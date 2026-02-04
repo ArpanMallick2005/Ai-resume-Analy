@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Login from './pages/Login.jsx';
 import Preview from './pages/Preview.jsx';
 import ResumeBuilder from './pages/ResumeBuilder.jsx';
+import ResumeAnalyzer from './pages/ResumeAnalyzer.jsx';
 import { useDispatch } from 'react-redux';
 import api from './configs/api.js';
 import { login, setLoading } from './app/features/authSlice.js';
@@ -44,6 +45,7 @@ const App = () => {
       <Route path="app" element={<Layout/>}>
       <Route index element={<Dashboard/>}/>
       <Route path='builder/:resumeId' element={<ResumeBuilder/>}/>
+      <Route path='analyzer' element={<ResumeAnalyzer/>}/>
       </Route>
       <Route path="view/:resumeId" element={<Preview/>}/>
       

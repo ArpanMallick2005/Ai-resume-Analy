@@ -36,7 +36,7 @@ const SkillsForm = ({data,onChange}) => {
         </div>
         {data.length > 0 ? (
             <div className='flex flex-wrap gap-2'>
-                {data.map(()=>(
+                {data.map((skill, index) => (
                     <span key={index} className='flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm'>
                         {skill}
                         <button onClick={()=>removeSkill(index)} className='ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors'>
@@ -45,7 +45,7 @@ const SkillsForm = ({data,onChange}) => {
                     </span>
                 ))}
             </div>
-        ):(
+        ) : (
             <div className='text-center py-6 text-gray-500'>
                 <Sparkles className='w-10 h-10 mx-auto mb-2 text-gray-300'/>
                 <p>No skills added yet.</p>
